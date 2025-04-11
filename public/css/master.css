@@ -1,0 +1,105 @@
+/* DATATABLE SEARCH MARGIN */
+.dataTables_wrapper,
+.dataTables_filter input {
+	margin-bottom: 10%;
+
+}
+
+
+/*STUDENT LIST/ MONITORING/ SECTION LIST LOWERCASE */
+.table.dataTable tbody td{
+	text-align: center;
+	text-transform: lowercase;
+	border-color:  #d4d8dd;
+	padding: 2px;
+
+}
+
+.table.dataTable thead th {
+	text-align: center;
+	border-color:  #d4d8dd;
+	padding: 12px;
+}
+.dots-vertical {
+	text-transform: uppercase;
+}
+
+.dataTables_wrapper .dataTables_paginate{
+	margin-top: 20px;
+}
+
+
+/* ARROW THEAD COLOR */
+.sorting:after,
+.sorting_asc:after,
+.sorting_desc:after {
+	color: #21d206 !important;
+
+}
+
+/* STUDENT EDIT FONT COLOR */
+.form-group.edit {
+	font-size: 20px;
+	font-weight:700;
+}
+
+.alert.sm {
+	font-size: 15px; /* Adjust the font size as needed */
+	padding: 5px; /* Adjust the padding as needed */
+}
+
+
+
+.card-body.Account {
+	height: 530px;
+}
+
+.small.mb-1 {
+	font-size: 18px;
+	font-weight: 700;
+	color: #337AB7;
+}
+
+.form-control.account-value {
+	color: #000;
+	font-size: 15px;
+	text-transform: lowercase;
+}
+
+.card-header.headers {
+	font-size: 22px;
+}
+/* END  UPDATE PROFILE SETTINGS */
+.student-profiles {
+	font-size: 19px;
+	color: #337AB7;
+}
+
+.small.mb-3.photo{
+	font-size: 18px;
+	font-weight:500;
+	color: #337AB7;
+	margin-left: 30px;
+}
+
+.student-User {
+	font-size: 20px;
+
+}
+
+.text-center.mt-5,
+.text-center.mt-3{
+	color: #858796;
+}
+
+
+#upload1 {
+	height: 180px;
+	width: 180px;
+	margin-left: 30px;
+	border-radius: 50%;
+	object-fit: cover;
+	background: #dfdfdf;
+	cursor: pointer;
+}
+

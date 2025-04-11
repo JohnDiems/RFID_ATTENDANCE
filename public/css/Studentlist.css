@@ -1,0 +1,51 @@
+
+/*  IMAGE REDIUS PHOTO STUDENTLIST / SECTIONLIST */
+.circular-image {
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.studentlist.vertical td {
+	vertical-align: middle;
+	padding: 2px;
+}
+
+/* STUDENT LIST UPLOAD PHOTO CSS */
+.upload{
+	width: 100px;
+	position: relative;
+}
+
+.upload {
+	position: relative;
+}
+
+#photo {
+	display: none;
+}
+
+#upload {
+	height: 150px;
+	width: 150px;
+	border-radius: 50%;
+	object-fit: cover;
+	background: #dfdfdf;
+	cursor: pointer;
+}
+.card.Studentlist{
+	margin-top: 30px;
+}
+.profiles-table{
+	text-transform:lowercase;
+}
+.dots-vertical{
+	text-transform: uppercase;
+}
+
+/*  UPDATE PROFILE SETTINGS */
+
+.INFORMATION {
+	color: #337AB7;
+
+}
+

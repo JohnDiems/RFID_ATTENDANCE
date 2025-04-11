@@ -1,0 +1,16 @@
+.text-center.th th{
+    text-align: center;
+}
+
+.circular-image {
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+
+.table.dataTable tbody td {
+    text-align: center;
+    text-transform: lowercase;
+    border-color: #d4d8dd;
+}
+

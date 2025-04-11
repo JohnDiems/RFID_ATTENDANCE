@@ -1,0 +1,18 @@
+.announcements {
+  border-bottom: 1px solid #337AB7;
+  border-right: 1px solid #337AB7;
+  border-left: 1px solid #337AB7;
+}
+
+.title {
+  border: 1px solid #337AB7;
+}
+
+.content {
+  border: 1px solid #337AB7;
+}
+
+.AnnouncementInstruction {
+  color: #337AB7;
+  
+}

@@ -1,0 +1,7 @@
+.footer {
+  margin-top: auto;
+}
+
+#wrapper #content-wrapper #content  {
+  flex: none;
+}

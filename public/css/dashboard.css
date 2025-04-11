@@ -1,0 +1,48 @@
+.custom-container {
+  margin-top: 15px;
+}
+
+.fa-users,
+.fa-user-graduate,
+.fa-sign-in-alt,
+.fa-sign-out-alt {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 115px;
+  height: 100%;
+  line-height: 140px;
+  text-align: center;
+  font-size: 70px;
+  border-radius: 5%;
+
+}
+
+.Dashbaord-table {
+  text-transform: lowercase;
+}
+
+.custom-icon1 {
+  color: #059669;
+
+}
+
+.custom-icon2 {
+  color: #337AB7;
+}
+
+.custom-icon3 {
+  color: #F4B400;
+}
+
+.custom-icon4 {
+  color: #DB4437;
+}
+
+.custom-list-group-item {
+  border: red;
+}
+
+.RecentUser td {
+  text-transform: lowercase;
+}

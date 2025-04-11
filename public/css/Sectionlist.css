@@ -1,0 +1,16 @@
+.card.Section{
+  border-color: #337AB7;
+}
+
+.Sectionlist.vertical td {
+	vertical-align: middle;
+  padding: 2px;
+}
+
+.btn.GRADEALL {
+  color: #000;
+  background-color: #CAE4FD;
+  width: 300px;
+  font-weight: 400;
+}
+
