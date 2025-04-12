@@ -313,7 +313,10 @@
                                placeholder="Please Scan RFID" 
                                id="StudentRFID" 
                                name="StudentRFID" 
+                               maxlength="11"
+                               autocomplete="off"
                                autofocus>
+                        @csrf
                     </div>
                 </div>
 
@@ -383,18 +386,13 @@
 <!-- DataTables JS -->
 <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 
-<!-- Your custom JavaScript files -->
-<script src="{{ asset('js/ajax.js') }}"></script>
-<script src="{{ asset('js/realTime.js') }}"></script>
-
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ asset('js/ajax.js') }}"></script>
     <script src="{{ asset('js/realTime.js') }}"></script>
     <script>
         // Show toast message
-        function showStatusMessage(message, type = 'info') {
+        function showToast(message, type = 'info') {
             const container = document.querySelector('.toast-container');
             
             // Create toast element
@@ -423,118 +421,140 @@
             // Add to container
             container.appendChild(toast);
             
-            // Remove after delay
+            // Add fade-in animation
+            toast.style.opacity = '0';
+            container.appendChild(toast);
+            
+            // Trigger reflow and add fade-in
+            toast.offsetHeight;
+            toast.style.opacity = '1';
+            toast.style.transition = 'opacity 0.3s ease-in-out';
+            
+            // Remove after 3 seconds with fade-out
             setTimeout(() => {
                 toast.style.opacity = '0';
                 setTimeout(() => {
-                    container.removeChild(toast);
+                    toast.remove();
                 }, 300);
             }, 3000);
         }
 
-        // Handle RFID form submission
-        // Focus RFID input field and clear on load
-        window.addEventListener('load', function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get CSRF token
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+            
+            // Get RFID input
             const rfidInput = document.getElementById('StudentRFID');
-            rfidInput.value = '';
-            rfidInput.focus();
-        });
+            let lastValue = '';
+            let submitTimeout;
+            let invalidAttempts = 0;
+            const maxInvalidAttempts = 3;
 
-        // Initialize clock with smooth updates
-        const initClock = () => {
-            const timeElement = document.getElementById('time');
-            const dateElement = document.getElementById('date');
-            
-            // Clear any existing interval
-            if (window.clockInterval) {
-                clearInterval(window.clockInterval);
+            // Clear student info function
+            function clearStudentInfo() {
+                document.getElementById('studentFullName').textContent = '-';
+                document.getElementById('studentCourse').textContent = '-';
+                document.getElementById('studentIn').textContent = '-';
+                document.getElementById('studentOut').textContent = '-';
+                document.getElementById('studentStatus').textContent = '-';
+                document.getElementById('studentPhoto').src = '';
             }
 
-            function updateClock() {
-                const now = new Date();
-                
-                // Format time
-                const hours = now.getHours().toString().padStart(2, '0');
-                const minutes = now.getMinutes().toString().padStart(2, '0');
-                const seconds = now.getSeconds().toString().padStart(2, '0');
-                
-                // Update time immediately
-                const newTime = `${hours}:${minutes}:${seconds}`;
-                if (timeElement.textContent !== newTime) {
-                    timeElement.textContent = newTime;
+            // Reset page function
+            function resetPage() {
+                clearStudentInfo();
+                showToast('Too many invalid attempts. Resetting...', 'error');
+                invalidAttempts = 0;
+            }
+
+            // Update student info function
+            function updateStudentInfo(data) {
+                if (data.data) {
+                    const profile = data.data.profile;
+                    if (profile) {
+                        document.getElementById('studentFullName').textContent = profile.FullName || '-';
+                        document.getElementById('studentCourse').textContent = profile.Course || '-';
+                        document.getElementById('studentIn').textContent = data.data.time_in || '-';
+                        document.getElementById('studentOut').textContent = data.data.time_out || '-';
+                        document.getElementById('studentStatus').textContent = data.data.status || '-';
+                        if (profile.Photo) {
+                            document.getElementById('studentPhoto').src = profile.Photo;
+                        }
+                    }
                 }
-                
-                // Update date only once per minute or if empty
-                if (seconds === '00' || !dateElement.textContent) {
-                    const options = { 
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                };
-                dateElement.textContent = now.toLocaleDateString('en-US', options);
             }
-            
-            // Set up smooth interval with RAF
-            let lastUpdate = performance.now();
-            let animationFrameId;
 
-            function tick(timestamp) {
-                const elapsed = timestamp - lastUpdate;
-                
-                if (elapsed >= 1000) { // Update every second
-                    lastUpdate = timestamp - (elapsed % 1000);
-                    updateClock();
+            // Submit RFID function
+            async function submitRFID(rfid) {
+                console.log('Submitting RFID:', rfid); // Debug log
+
+                try {
+                    const response = await fetch('/mark-attendance', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ StudentRFID: rfid })
+                    });
+
+                    const data = await response.json();
+                    console.log('Response data:', data); // Debug log
+
+                    if (data.status === 'success') {
+                        showToast(data.message, 'success');
+                        updateStudentInfo(data);
+                        invalidAttempts = 0; // Reset on success
+                    } else {
+                        showToast(data.message || 'RFID not found', 'error');
+                        clearStudentInfo();
+                        invalidAttempts++;
+                        console.log('Invalid attempts:', invalidAttempts); // Log invalid attempts
+                        if (invalidAttempts >= maxInvalidAttempts) {
+                            resetPage();
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error during submission:', error); // Debug log
+                    showToast('Failed to process RFID', 'error');
+                    clearStudentInfo();
+                } finally {
+                    // Clear input and refocus
+                    rfidInput.value = '';
+                    rfidInput.focus();
+                    lastValue = ''; // Reset lastValue to allow duplicate submissions
                 }
-                
-                animationFrameId = requestAnimationFrame(tick);
             }
 
-            // Start the animation
-            animationFrameId = requestAnimationFrame(tick);
+            // Handle RFID input
+            rfidInput.addEventListener('input', function() {
+                const currentValue = this.value.trim();
+                
+                // Clear any existing timeout
+                if (submitTimeout) {
+                    clearTimeout(submitTimeout);
+                }
 
-            // Clean up on page unload
-            window.addEventListener('unload', () => {
-                if (animationFrameId) {
-                    cancelAnimationFrame(animationFrameId);
+                // If length is between 8 and 11, submit after a very short delay
+                if (currentValue.length >= 8 && currentValue.length <= 11) {
+                    submitTimeout = setTimeout(() => {
+                        if (currentValue !== lastValue) { // Prevent duplicate submissions
+                            lastValue = currentValue;
+                            submitRFID(currentValue);
+                        }
+                    }, 100); // 100ms delay
                 }
             });
-        });
 
-        // Focus RFID input on any key press
-        document.addEventListener('keypress', (e) => {
-            if (!e.target.matches('input')) {
-                document.getElementById('StudentRFID').focus();
-            }
-        });
-
-        // Handle AJAX response
-        function handleAttendanceResponse(response) {
-            if (response.success) {
-                showStatusMessage(response.success, 'success');
-                // Update student info display
-                if (response.student) {
-                    document.getElementById('studentFullName').textContent = response.student.name || '-';
-                    document.getElementById('studentCourse').textContent = response.student.section || '-';
-                    document.getElementById('studentIn').textContent = response.student.timeIn || '-';
-                    document.getElementById('studentOut').textContent = response.student.timeOut || '-';
-                    document.getElementById('lunchIn').textContent = response.student.lunchIn || '-';
-                    document.getElementById('lunchOut').textContent = response.student.lunchOut || '-';
-                    document.getElementById('studentStatus').textContent = response.student.status || '-';
-                }
-            } else if (response.error) {
-                showStatusMessage(response.error, 'error');
-            } else if (response.Invalidmessage) {
-                showStatusMessage(response.Invalidmessage, 'error');
-            }
-            
-            // Clear RFID input
-            const rfidInput = document.getElementById('StudentRFID');
-            if (rfidInput) {
-                rfidInput.value = '';
+            // Keep focus on RFID input
+            document.addEventListener('click', function() {
                 rfidInput.focus();
-            }
-        }
+            });
+
+            // Focus on page load
+            rfidInput.focus();
+        });
     </script>
 </body>
 </html>

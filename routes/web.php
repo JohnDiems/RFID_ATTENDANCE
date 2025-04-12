@@ -21,10 +21,13 @@ use App\Http\Controllers\AttendancesController;
 */
 
 // Public Routes
-Route::get('/', [AttendancesController::class, 'home'])->name('home');
+Route::get('/LandingPage.home', [AttendancesController::class, 'home'])->name('home');
 
 // Landing Page - also accessible via /attendance for backward compatibility
 Route::get('/attendance', [AttendancesController::class, 'home']);
+
+// Mark Attendance Route
+Route::post('/mark-attendance', [AttendancesController::class, 'markAttendance']);
 
 // Authentication Routes
 Route::middleware('guest')->group(function () {

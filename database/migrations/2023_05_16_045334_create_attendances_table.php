@@ -12,25 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('attendances', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('photo')->nullable();
-            $table->string('StudentRFID');
-            $table->string('FullName')->nullable();
-            $table->string('YearLevel')->nullable();
-            $table->string('Course')->nullable();
-            $table->string('time_in')->nullable();
-            $table->string('time_out')->nullable();
-            $table->string('Status')->nullable();
-            $table->date('date')->nullable();
-
-
-            // Add a foreign key column to reference the users table
-            $table->unsignedBigInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-
+            $table->id();
+            $table->foreignId('profile_id')->constrained()->onDelete('cascade');
+            $table->date('date');
+            $table->timestamp('time_in')->nullable();
+            $table->timestamp('time_out')->nullable();
+            $table->enum('status', ['present', 'late', 'excused', 'unexcused'])->default('present');
             $table->timestamps();
-
-
+            $table->softDeletes();
         });
     }
 

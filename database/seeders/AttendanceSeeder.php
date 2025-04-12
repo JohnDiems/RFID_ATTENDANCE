@@ -36,23 +36,10 @@ class AttendanceSeeder extends Seeder
                     
                     Attendance::create([
                         'profile_id' => $profile->id,
-                        'StudentRFID' => $profile->StudentRFID,
+                        'date' => $date,
                         'time_in' => $timeIn,
                         'time_out' => $timeOut,
-                        'date' => $date,
-                        'status' => $isLate ? 'late' : 'present',
-                        'device_id' => 'GATE-' . $faker->randomElement(['01', '02', '03']),
-                        'location' => $faker->randomElement(['Main Gate', 'Side Gate', 'Back Gate']),
-                        'meta_data' => json_encode([
-                            'device_type' => 'RFID Scanner',
-                            'temperature' => $faker->randomFloat(1, 36.1, 37.2),
-                            'mask_detected' => $faker->boolean(95)
-                        ]),
-                        'schedule_data' => json_encode([
-                            'expected_time_in' => '07:30:00',
-                            'expected_time_out' => '16:00:00',
-                            'grace_period_minutes' => 15
-                        ])
+                        'status' => $isLate ? 'late' : 'present'
                     ]);
                 }
             }
