@@ -100,8 +100,8 @@ class DashboardController extends Controller
                 return [
                     'type' => 'lunch',
                     'profile' => $lunch->profile,
-                    'action' => $lunch->lunch_out ? 'Lunch Out' : 'Lunch In',
-                    'time' => $lunch->lunch_out ?? $lunch->lunch_in,
+                    'action' => $lunch->time_out ? 'Time Out' : 'Time In',
+                    'time' => $lunch->time_out ?? $lunch->time_in,
                     'status' => $lunch->status
                 ];
             });
@@ -205,8 +205,8 @@ class DashboardController extends Controller
             $lunchTrend[] = [
                 'date' => $date->format('Y-m-d'),
                 'status' => $record ? $record->status : 'none',
-                'lunch_in' => $record ? $record->lunch_in : null,
-                'lunch_out' => $record ? $record->lunch_out : null
+                'time_in' => $record ? $record->time_in : null,
+                'time_out' => $record ? $record->time_out : null
             ];
         }
 

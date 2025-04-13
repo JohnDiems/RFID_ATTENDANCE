@@ -10,10 +10,11 @@ class Schedule extends Model
     protected $primaryKey = 'id';
     protected $table = 'schedule';
     protected $fillable = [
-        'EventSchedule',
-        'EventTimein',
+        'EventName',
+        'EventTimeIn',
         'EventTimeout',
-        'EventDate'
+        'EventDate',
+        'Status'
     ];
 
 }

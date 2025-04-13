@@ -4,38 +4,42 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\User;
 use App\Models\Profile;
 use App\Models\Card;
 
 class Lunch extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'lunches';
-    public $timestamps = false;
 
     protected $fillable = [
-        'photo',
+        'profile_id',
+        'card_id',
         'StudentRFID',
-        'FullName',
-        'YearLevel',
-        'Course',
-        'lunch_in',
-        'lunch_out',
         'date',
-        'card_id'
+        'time_in',
+        'time_out',
+        'status',
+        'device_id',
+        'location',
+        'meta_data',
+        'menu_data'
     ];
 
     protected $casts = [
         'date' => 'date',
-        'lunch_in' => 'datetime:g:i:s A',
-        'lunch_out' => 'datetime:g:i:s A'
+        'time_in' => 'datetime',
+        'time_out' => 'datetime',
+        'meta_data' => 'array',
+        'menu_data' => 'array'
     ];
 
     public function profile()
     {
-        return $this->belongsTo(Profile::class, 'StudentRFID', 'StudentRFID');
+        return $this->belongsTo(Profile::class);
     }
 
     public function card()
@@ -50,6 +54,6 @@ class Lunch extends Model
 
     public function isComplete()
     {
-        return !is_null($this->lunch_in) && !is_null($this->lunch_out);
+        return !is_null($this->time_in) && !is_null($this->time_out);
     }
 }

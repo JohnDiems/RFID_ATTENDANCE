@@ -51,4 +51,9 @@ class Profile extends Model
     {
         return $this->hasOne(Card::class);
     }
+
+    public function lunches()
+    {
+        return $this->hasMany(Lunch::class);
+    }
 }

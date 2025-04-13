@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
@@ -38,26 +39,32 @@ class ProfileController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'StudentRFID' => 'required|unique:profiles,StudentRFID',
-            'student_id' => 'required|unique:profiles,student_id',
-            'FullName' => 'required|string|max:255',
-            'Gender' => 'required|in:male,female',
-            'birth_date' => 'required|date',
-            'blood_type' => 'required|in:A+,A-,B+,B-,O+,O-,AB+,AB-',
-            'YearLevel' => 'required|string',
-            'Course' => 'required|string',
-            'section' => 'required|string',
-            'Parent' => 'required|string',
-            'EmergencyAddress' => 'required|string',
-            'EmergencyNumber' => 'required|string',
-            'emergency_contacts' => 'required|array',
-            'CompleteAddress' => 'required|string',
-            'ContactNumber' => 'required|string',
-            'EmailAddress' => 'required|email|unique:users,email'
-        ]);
-
+        // Debug: Log all form data
+        \Log::info('Profile creation attempt with data:', $request->all());
+        
         try {
+            $validated = $request->validate([
+                'StudentRFID' => 'required|unique:profiles,StudentRFID',
+                'student_id' => 'required|unique:profiles,student_id',
+                'FullName' => 'required|string|max:255',
+                'Gender' => 'required|in:Male,Female',
+                'birth_date' => 'required|date',
+                'blood_type' => 'required|in:A+,A-,B+,B-,O+,O-,AB+,AB-',
+                'YearLevel' => 'required|string',
+                'Course' => 'required|string',
+                'Section' => 'required|string',
+                'Parent' => 'required|string',
+                'EmergencyAddress' => 'required|string',
+                'EmergencyNumber' => 'required|string',
+                'CompleteAddress' => 'required|string',
+                'ContactNumber' => 'required|string',
+                'EmailAddress' => 'required|email|unique:users,email',
+                'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+            
+            // Debug: Log validation success
+            \Log::info('Profile validation passed');
+
             DB::beginTransaction();
 
             // Create user account
@@ -70,30 +77,69 @@ class ProfileController extends Controller
                 'status' => 'active',
                 'timezone' => 'Asia/Manila'
             ]);
+            
+            // Debug: Log user creation
+            \Log::info('User created with ID: ' . $user->id);
 
-            // Create profile
-            $profile = Profile::create(array_merge(
-                $request->all(),
+            // Prepare profile data
+            $profileData = array_merge(
+                $request->except('photo'),
                 [
                     'user_id' => $user->id,
                     'enrollment_status' => 'enrolled',
                     'Status' => true,
+                    'section' => $request->Section, // Map Section to section
+                    'emergency_contacts' => json_encode([
+                        'name' => $request->Parent,
+                        'number' => $request->EmergencyNumber,
+                        'address' => $request->EmergencyAddress
+                    ]),
                     'medical_conditions' => json_encode([
                         'allergies' => [],
                         'medications' => [],
                         'conditions' => []
                     ])
                 ]
-            ));
+            );
+            
+            // Debug: Log profile data
+            \Log::info('Profile data prepared', $profileData);
+
+            // Handle photo upload
+            if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
+                // Store new photo with a unique name
+                $fileName = time() . '_' . $request->file('photo')->getClientOriginalName();
+                $photoPath = $request->file('photo')->storeAs('profile-photos', $fileName, 'public');
+                $profileData['photo'] = $photoPath;
+                
+                // Debug: Log photo upload
+                \Log::info('Photo uploaded: ' . $photoPath);
+            }
+            
+            // Create profile
+            $profile = Profile::create($profileData);
+            
+            // Debug: Log profile creation
+            \Log::info('Profile created with ID: ' . $profile->id);
 
             DB::commit();
+            
+            // Debug: Log transaction committed
+            \Log::info('Database transaction committed successfully');
 
-            return redirect()->route('profiles.show', $profile)
+            return redirect()->route('admin.profiles')
                 ->with('success', 'Profile created successfully. Default password: student123');
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Debug: Log validation errors
+            \Log::error('Validation error during profile creation:', $e->errors());
+            return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'An error occurred while creating the profile');
+            // Debug: Log any other errors
+            \Log::error('Error during profile creation: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            return back()->with('error', 'An error occurred while creating the profile: ' . $e->getMessage())->withInput();
         }
     }
 
@@ -142,88 +188,203 @@ class ProfileController extends Controller
         return view('profiles.edit', compact('profile'));
     }
 
+    /**
+     * Edit the authenticated user's own profile.
+     */
+    public function editOwn()
+    {
+        $user = auth()->user();
+        $profile = $user->profile;
+        
+        if (!$profile) {
+            return redirect()->route('profile.create')
+                ->with('error', 'Please complete your profile first.');
+        }
+        
+        return view('profiles.edit-own', compact('profile'));
+    }
+
     public function update(Request $request, Profile $profile)
     {
         $request->validate([
-            'StudentRFID' => 'required|unique:profiles,StudentRFID,' . $profile->id,
-            'student_id' => 'required|unique:profiles,student_id,' . $profile->id,
             'FullName' => 'required|string|max:255',
             'Gender' => 'required|in:male,female',
             'birth_date' => 'required|date',
             'blood_type' => 'required|in:A+,A-,B+,B-,O+,O-,AB+,AB-',
-            'YearLevel' => 'required|string',
-            'Course' => 'required|string',
-            'section' => 'required|string',
-            'Parent' => 'required|string',
-            'EmergencyAddress' => 'required|string',
-            'EmergencyNumber' => 'required|string',
-            'emergency_contacts' => 'required|array',
-            'CompleteAddress' => 'required|string',
             'ContactNumber' => 'required|string',
-            'enrollment_status' => 'required|in:enrolled,graduated,withdrawn,suspended'
+            'CompleteAddress' => 'required|string',
+            'Parent' => 'required|string',
+            'EmergencyNumber' => 'required|string',
+            'EmergencyAddress' => 'required|string',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'StudentRFID' => 'nullable|string',
+            'YearLevel' => 'nullable|string',
+            'Course' => 'nullable|string',
         ]);
 
-        try {
-            DB::beginTransaction();
-
-            // Update profile
-            $profile->update($request->all());
-
-            // Update associated user
-            if ($profile->user) {
-                $profile->user->update([
-                    'name' => $request->FullName,
-                    'status' => $request->enrollment_status === 'enrolled' ? 'active' : 'inactive'
-                ]);
+        // Start with a clean array of data to update
+        $data = [
+            'FullName' => $request->FullName,
+            'Gender' => $request->Gender,
+            'birth_date' => $request->birth_date,
+            'blood_type' => $request->blood_type,
+            'ContactNumber' => $request->ContactNumber,
+            'CompleteAddress' => $request->CompleteAddress,
+            'Parent' => $request->Parent,
+            'EmergencyNumber' => $request->EmergencyNumber,
+            'EmergencyAddress' => $request->EmergencyAddress,
+            'StudentRFID' => $request->StudentRFID,
+            'YearLevel' => $request->YearLevel,
+            'Course' => $request->Course,
+        ];
+        
+        // Handle photo upload
+        if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
+            // Delete old photo if exists and it's not the default
+            if ($profile->photo && $profile->photo !== 'default.jpg' && Storage::disk('public')->exists($profile->photo)) {
+                Storage::disk('public')->delete($profile->photo);
             }
-
-            DB::commit();
-
-            return redirect()->route('profiles.show', $profile)
-                ->with('success', 'Profile updated successfully');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'An error occurred while updating the profile');
+            
+            // Store new photo with a unique name
+            $fileName = time() . '_' . $request->file('photo')->getClientOriginalName();
+            $photoPath = $request->file('photo')->storeAs('profile-photos', $fileName, 'public');
+            $data['photo'] = $photoPath;
         }
+
+        $profile->update($data);
+
+        if ($profile->user) {
+            $profile->user->update([
+                'name' => $request->FullName
+            ]);
+        }
+
+        return redirect()->route('admin.profiles.show', $profile)
+            ->with('success', 'Profile updated successfully');
     }
 
     public function updateStatus(Request $request, Profile $profile)
     {
         $request->validate([
-            'status' => 'required|boolean',
-            'reason' => 'required_if:status,false|string'
+            'status' => 'required|boolean'
         ]);
 
-        try {
-            DB::beginTransaction();
+        $profile->update([
+            'Status' => $request->status
+        ]);
 
-            $profile->update([
-                'Status' => $request->status,
-                'meta_data' => json_encode(array_merge(
-                    json_decode($profile->meta_data, true) ?? [],
-                    [
-                        'status_updated_by' => auth()->user()->name,
-                        'status_updated_at' => now()->toDateTimeString(),
-                        'status_reason' => $request->reason ?? null
-                    ]
-                ))
-            ]);
+        return redirect()->back()
+            ->with('success', 'Profile status updated successfully.');
+    }
 
-            // Update user status if profile is deactivated
-            if (!$request->status && $profile->user) {
-                $profile->user->update(['status' => 'inactive']);
-            }
-
-            DB::commit();
-
-            return redirect()->route('profiles.show', $profile)
-                ->with('success', 'Profile status updated successfully');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'An error occurred while updating the profile status');
+    /**
+     * Update the authenticated user's own profile.
+     */
+    public function updateOwn(Request $request)
+    {
+        $user = auth()->user();
+        $profile = $user->profile;
+        
+        if (!$profile) {
+            return redirect()->route('profile.create')
+                ->with('error', 'Please complete your profile first.');
         }
+        
+        $request->validate([
+            'FullName' => 'required|string|max:255',
+            'Gender' => 'required|in:male,female',
+            'birth_date' => 'required|date',
+            'blood_type' => 'required|in:A+,A-,B+,B-,O+,O-,AB+,AB-',
+            'ContactNumber' => 'required|string',
+            'CompleteAddress' => 'required|string',
+            'Parent' => 'required|string',
+            'EmergencyNumber' => 'required|string',
+            'EmergencyAddress' => 'required|string',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+        
+        // Start with a clean array of data to update
+        $data = [
+            'FullName' => $request->FullName,
+            'Gender' => $request->Gender,
+            'birth_date' => $request->birth_date, // Store directly without parsing
+            'blood_type' => $request->blood_type,
+            'ContactNumber' => $request->ContactNumber,
+            'CompleteAddress' => $request->CompleteAddress,
+            'Parent' => $request->Parent,
+            'EmergencyNumber' => $request->EmergencyNumber,
+            'EmergencyAddress' => $request->EmergencyAddress,
+        ];
+        
+        // Handle photo upload
+        if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
+            // Delete old photo if exists and it's not the default
+            if ($profile->photo && $profile->photo !== 'default.jpg' && Storage::disk('public')->exists($profile->photo)) {
+                Storage::disk('public')->delete($profile->photo);
+            }
+            
+            // Store new photo with a unique name
+            $fileName = time() . '_' . $request->file('photo')->getClientOriginalName();
+            $photoPath = $request->file('photo')->storeAs('profile-photos', $fileName, 'public');
+            $data['photo'] = $photoPath;
+        }
+        
+        // Update the profile with the prepared data
+        $updated = $profile->update($data);
+        
+        // Update the user's name to match the profile
+        $user->update([
+            'name' => $request->FullName
+        ]);
+        
+        if ($updated) {
+            return redirect()->route('profile.edit')
+                ->with('success', 'Your profile has been updated successfully! All your information is now up to date.');
+        } else {
+            return redirect()->route('profile.edit')
+                ->with('error', 'There was a problem updating your profile. Please try again.');
+        }
+    }
+
+    /**
+     * Display the user settings page.
+     */
+    public function settings()
+    {
+        $user = auth()->user();
+        return view('profiles.settings', compact('user'));
+    }
+
+    /**
+     * Update the user settings.
+     */
+    public function updateSettings(Request $request)
+    {
+        $user = auth()->user();
+        
+        $request->validate([
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'username' => 'required|string|unique:users,username,' . $user->id,
+            'current_password' => 'required_with:password|password',
+            'password' => 'nullable|string|min:8|confirmed',
+            'timezone' => 'required|string',
+        ]);
+        
+        $userData = [
+            'email' => $request->email,
+            'username' => $request->username,
+            'timezone' => $request->timezone,
+        ];
+        
+        // Update password if provided
+        if ($request->filled('password')) {
+            $userData['password'] = Hash::make($request->password);
+        }
+        
+        $user->update($userData);
+        
+        return redirect()->route('profile.settings')
+            ->with('success', 'Your settings have been updated successfully.');
     }
 
     public function report(Request $request)

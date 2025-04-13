@@ -18,9 +18,8 @@ class LoginController extends Controller
     {   
         // VALIDATOR REQUEST REQUIRED
         $validator = Validator::make($request->all(), [
-            'username' => 'required',
+            'email' => 'required|email',
             'password' => 'required',
-
         ]);
 
         // FAIL VALIDATOR REQUEST REDIRECT TO LOGIN
@@ -30,31 +29,30 @@ class LoginController extends Controller
             ->withInput();
         }
 
-        // CREDENTIALS REQUEST USERNAME, PASSWORD
-        $credentials = $request->only('username', 'password');
-
-        // CREDENTIALS ROLES ADMIN -> ADMIN / TEACHER -> REPORTS / STUDENT -> LOG //
-        if (Auth::attempt($credentials)) {
-            $user = Auth::user();
-            //ADMIN ROLE
-            if ($user->role === 'admin') {
-                return redirect()->route('Dashboard');
-                // TEACHER ROLE
-            } else if ($user->role === 'teacher') {
-                return redirect()->route('TeacherDashboard');
-                // STUDENT ROLE
-            } else {
-                return redirect()->route('StudentAttendanceRecord');
-            }
+        // Attempt authentication with email
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            // Regenerate session to prevent session fixation
+            $request->session()->regenerate();
             
+            $user = Auth::user();
+            
+            // Redirect based on user role
+            switch ($user->role) {
+                case 'admin':
+                    return redirect()->intended(route('admin.dashboard'));
+                case 'teacher':
+                    return redirect()->intended(route('teacher.dashboard'));
+                default: // student or any other role
+                    return redirect()->intended(route('student.attendance'));
+            }
         }
 
-        // USERNAME ERROR RETURN TO LOGIN
-        $user = User::where('username', $request->username)->first();
+        // EMAIL ERROR RETURN TO LOGIN
+        $user = User::where('email', $request->email)->first();
         if (!$user) {
             return redirect()->route('login')
-                // USERNAME ERROR MESSAGE
-                ->with('error', 'Username does not exist')
+                // EMAIL ERROR MESSAGE
+                ->with('error', 'Email address not found')
                 ->withInput();
         }
     
@@ -62,7 +60,7 @@ class LoginController extends Controller
         return redirect()->route('login')
             // PASSWORD ERROR MESSAGE
             ->with('error', 'Incorrect password')
-            ->withInput();
+            ->withInput(['email' => $request->email]);
     }
 
     // LOG IN FORM 
@@ -71,8 +69,13 @@ class LoginController extends Controller
         return view('Login.login');
     }
 
-
-
-
-   
+    // LOGOUT
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        
+        return redirect()->route('login');
+    }
 }
