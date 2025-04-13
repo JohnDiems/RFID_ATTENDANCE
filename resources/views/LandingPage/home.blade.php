@@ -7,12 +7,38 @@
     <link rel="icon" href="{{ asset('images/RFIDLOGO.png') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>RFID Attendance System</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        violet: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                        mono: ['Roboto Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         :root {
             --primary: #7c3aed;
@@ -288,33 +314,33 @@
         }
     </style>
 </head>
-<body class="d-flex align-items-center min-vh-100">
+<body class="flex items-center justify-center min-h-screen bg-gradient-to-br from-violet-50 to-white">
     <!-- Toast Container for Messages -->
-    <div class="toast-container"></div>
+    <div class="fixed top-4 right-4 z-50" id="toast-container"></div>
 
-    <section class="w-100">
-        <div class="container">
+    <section class="w-full">
+        <div class="container mx-auto px-4">
             <!-- Clock Section -->
-            <div class="clock-section text-center mb-4">
-                <h1 class="time mb-0" id="time"></h1>
-                <p class="date" id="date"></p>
+            <div class="text-center mb-9 py-5">
+                <h1 class="text-8xl font-mono font-semibold text-violet-700 mb-0" id="time"></h1>
+                <p class="text-2xl text-violet-600" id="date"></p>
             </div>
 
             <!-- Main Content -->
-            <div class="row g-4">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
                 <!-- Left Column - User Information -->
-                <div class="col-md-4">
-                    <div class="card shadow-sm mb-4" style="border-color: #ddd6fe;">
-                        <div class="card-header text-center" style="background-color: #7c3aed; color: white;">
-                            <h5 class="mb-0">Student Information</h5>
+                <div class="md:col-span-4">
+                    <div class="bg-white rounded-lg shadow-md mb-4 border border-violet-200 overflow-hidden">
+                        <div class="bg-violet-600 text-white text-center py-3">
+                            <h5 class="text-lg font-semibold">Student Information</h5>
                         </div>
-                        <div class="card-body text-center">
-                            <div class="mb-3 mt-2">
-                                <img id="studentPhoto" class="img-fluid rounded-circle border border-3" style="max-height: 180px; width: 180px; height: 180px; object-fit: cover; border-color: #ddd6fe;" >
+                        <div class="p-4 text-center">
+                            <div class="mb-4 mt-2">
+                                <img id="studentPhoto" class="w-40 h-40 mx-auto rounded-full border-3 border-violet-200 object-cover" >
                             </div>
-                            <div class="mb-4">
+                            <div class="mb-6">
                                 <input type="text" 
-                                       class="form-control form-control-lg text-center" style="border-color: #ddd6fe;" 
+                                       class="w-full py-3 px-4 text-center text-lg border border-violet-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent" 
                                        placeholder="Please Scan RFID" 
                                        id="StudentRFID" 
                                        name="StudentRFID" 
@@ -323,34 +349,34 @@
                                        autofocus>
                                 @csrf
                             </div>
-                            <div class="border-top pt-3" style="border-color: #ede9fe;">
-                                <div class="row mb-2 py-2 border-bottom" style="border-color: #f5f3ff;">
-                                    <div class="col-5 text-start fw-semibold" style="color: #6d28d9;">Name:</div>
-                                    <div id="studentFullName" class="col-7 text-start fw-bold">-</div>
+                            <div class="border-t border-violet-100 pt-3">
+                                <div class="flex mb-2 py-2 border-b border-violet-50">
+                                    <div class="w-2/5 text-left font-semibold text-violet-700">Name:</div>
+                                    <div id="studentFullName" class="w-3/5 text-left font-bold">-</div>
                                 </div>
-                                <div class="row mb-2 py-2 border-bottom" style="border-color: #f5f3ff;">
-                                    <div class="col-5 text-start fw-semibold" style="color: #6d28d9;">Section:</div>
-                                    <div id="studentCourse" class="col-7 text-start">-</div>
+                                <div class="flex mb-2 py-2 border-b border-violet-50">
+                                    <div class="w-2/5 text-left font-semibold text-violet-700">Section:</div>
+                                    <div id="studentCourse" class="w-3/5 text-left">-</div>
                                 </div>
-                                <div class="row mb-2 py-2 border-bottom" style="border-color: #f5f3ff;">
-                                    <div class="col-5 text-start fw-semibold" style="color: #6d28d9;">Time In:</div>
-                                    <div id="studentIn" class="col-7 text-start">-</div>
+                                <div class="flex mb-2 py-2 border-b border-violet-50">
+                                    <div class="w-2/5 text-left font-semibold text-violet-700">Time In:</div>
+                                    <div id="studentIn" class="w-3/5 text-left">-</div>
                                 </div>
-                                <div class="row mb-2 py-2 border-bottom" style="border-color: #f5f3ff;">
-                                    <div class="col-5 text-start fw-semibold" style="color: #6d28d9;">Time Out:</div>
-                                    <div id="studentOut" class="col-7 text-start">-</div>
+                                <div class="flex mb-2 py-2 border-b border-violet-50">
+                                    <div class="w-2/5 text-left font-semibold text-violet-700">Time Out:</div>
+                                    <div id="studentOut" class="w-3/5 text-left">-</div>
                                 </div>
-                                <div class="row mb-2 py-2 border-bottom" style="border-color: #f5f3ff;">
-                                    <div class="col-5 text-start fw-semibold" style="color: #6d28d9;">Lunch In:</div>
-                                    <div id="lunchIn" class="col-7 text-start">-</div>
+                                <div class="flex mb-2 py-2 border-b border-violet-50">
+                                    <div class="w-2/5 text-left font-semibold text-violet-700">Lunch In:</div>
+                                    <div id="lunchIn" class="w-3/5 text-left">-</div>
                                 </div>
-                                <div class="row mb-2 py-2 border-bottom" style="border-color: #f5f3ff;">
-                                    <div class="col-5 text-start fw-semibold" style="color: #6d28d9;">Lunch Out:</div>
-                                    <div id="lunchOut" class="col-7 text-start">-</div>
+                                <div class="flex mb-2 py-2 border-b border-violet-50">
+                                    <div class="w-2/5 text-left font-semibold text-violet-700">Lunch Out:</div>
+                                    <div id="lunchOut" class="w-3/5 text-left">-</div>
                                 </div>
-                                <div class="row py-2">
-                                    <div class="col-5 text-start fw-semibold" style="color: #6d28d9;">Status:</div>
-                                    <div id="studentStatus" class="col-7 text-start">-</div>
+                                <div class="flex py-2">
+                                    <div class="w-2/5 text-left font-semibold text-violet-700">Status:</div>
+                                    <div id="studentStatus" class="w-3/5 text-left">-</div>
                                 </div>
                             </div>
                         </div>
@@ -358,26 +384,26 @@
                 </div>
 
                 <!-- Right Column - Attendance Records Table -->
-                <div class="col-md-8">
-                    <div class="card shadow-sm">
-                        <div class="card-header text-center" style="background-color: #7c3aed; color: white;">
-                            <h5 class="mb-0">Attendance Records</h5>
+                <div class="md:col-span-8">
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                        <div class="bg-violet-600 text-white text-center py-3">
+                            <h5 class="text-lg font-semibold">Attendance Records</h5>
                         </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-striped table-hover">
-                                    <thead style="background-color: #ede9fe;">
+                        <div class="p-4">
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-violet-100">
                                         <tr>
-                                            <th>Name</th>
-                                            <th>Section</th>
-                                            <th>Time In</th>
-                                            <th>Lunch In</th>
-                                            <th>Lunch Out</th>
-                                            <th>Time Out</th>
-                                            <th>Status</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-violet-700 uppercase tracking-wider">Name</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-violet-700 uppercase tracking-wider">Section</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-violet-700 uppercase tracking-wider">Time In</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-violet-700 uppercase tracking-wider">Lunch In</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-violet-700 uppercase tracking-wider">Lunch Out</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-violet-700 uppercase tracking-wider">Time Out</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-violet-700 uppercase tracking-wider">Status</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="attendanceTable">
+                                    <tbody id="attendanceTable" class="bg-white divide-y divide-gray-200">
                                         <!-- Attendance records will be populated here -->
                                     </tbody>
                                 </table>
@@ -401,32 +427,36 @@
 
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/realTime.js') }}"></script>
     <script>
         // Show toast message
         function showToast(message, type = 'info') {
-            const container = document.querySelector('.toast-container');
+            const container = document.getElementById('toast-container');
             
             // Create toast element
             const toast = document.createElement('div');
-            toast.className = `toast ${type} show`;
             
-            // Set icon based on type
+            // Set toast classes based on type
+            let bgColor = 'bg-violet-100 border-violet-500 text-violet-700';
             let icon = 'info-circle';
+            
             switch(type) {
                 case 'success':
+                    bgColor = 'bg-green-100 border-green-500 text-green-700';
                     icon = 'check-circle';
                     break;
                 case 'error':
+                    bgColor = 'bg-red-100 border-red-500 text-red-700';
                     icon = 'exclamation-circle';
                     break;
             }
             
+            toast.className = `${bgColor} border-l-4 p-4 mb-3 rounded shadow-md transform transition-all duration-300 ease-in-out`;
+            
             // Set toast content
             toast.innerHTML = `
-                <div class="toast-body d-flex align-items-center">
-                    <i class="fas fa-${icon} me-2"></i>
+                <div class="flex items-center">
+                    <i class="fas fa-${icon} mr-3"></i>
                     <span>${message}</span>
                 </div>
             `;
@@ -434,18 +464,14 @@
             // Add to container
             container.appendChild(toast);
             
-            // Add fade-in animation
-            toast.style.opacity = '0';
-            container.appendChild(toast);
-            
-            // Trigger reflow and add fade-in
-            toast.offsetHeight;
-            toast.style.opacity = '1';
-            toast.style.transition = 'opacity 0.3s ease-in-out';
-            
-            // Remove after 3 seconds with fade-out
+            // Add animation classes
             setTimeout(() => {
-                toast.style.opacity = '0';
+                toast.classList.add('translate-x-0', 'opacity-100');
+            }, 10);
+            
+            // Remove after 3 seconds with animation
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-x-full');
                 setTimeout(() => {
                     toast.remove();
                 }, 300);

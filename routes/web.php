@@ -21,7 +21,7 @@ use App\Http\Controllers\AttendancesController;
 */
 
 // Public Routes
-Route::get('/LandingPage.home', [AttendancesController::class, 'home'])->name('home');
+Route::get('/', [AttendancesController::class, 'home'])->name('home');
 
 // Landing Page - also accessible via /attendance for backward compatibility
 Route::get('/attendance', [AttendancesController::class, 'home']);
