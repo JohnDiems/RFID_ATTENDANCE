@@ -295,82 +295,95 @@
     <section class="w-100">
         <div class="container">
             <!-- Clock Section -->
-            <div class="clock-section">
+            <div class="clock-section text-center mb-4">
                 <h1 class="time mb-0" id="time"></h1>
                 <p class="date" id="date"></p>
             </div>
 
             <!-- Main Content -->
             <div class="row g-4">
-                <!-- Left Column - Photo and RFID Input -->
+                <!-- Left Column - User Information -->
                 <div class="col-md-4">
-                    <div class="BackgroundColor PhotoBox mb-3">
-                        <img id="studentPhoto" class="img-fluid" >
-                    </div>
-                    <div class="input-group-lg">
-                        <input type="text" 
-                               class="form-control text-center" 
-                               placeholder="Please Scan RFID" 
-                               id="StudentRFID" 
-                               name="StudentRFID" 
-                               maxlength="11"
-                               autocomplete="off"
-                               autofocus>
-                        @csrf
+                    <div class="card shadow-sm mb-4" style="border-color: #ddd6fe;">
+                        <div class="card-header text-center" style="background-color: #7c3aed; color: white;">
+                            <h5 class="mb-0">Student Information</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="mb-3 mt-2">
+                                <img id="studentPhoto" class="img-fluid rounded-circle border border-3" style="max-height: 180px; width: 180px; height: 180px; object-fit: cover; border-color: #ddd6fe;" >
+                            </div>
+                            <div class="mb-4">
+                                <input type="text" 
+                                       class="form-control form-control-lg text-center" style="border-color: #ddd6fe;" 
+                                       placeholder="Please Scan RFID" 
+                                       id="StudentRFID" 
+                                       name="StudentRFID" 
+                                       maxlength="11"
+                                       autocomplete="off"
+                                       autofocus>
+                                @csrf
+                            </div>
+                            <div class="border-top pt-3" style="border-color: #ede9fe;">
+                                <div class="row mb-2 py-2 border-bottom" style="border-color: #f5f3ff;">
+                                    <div class="col-5 text-start fw-semibold" style="color: #6d28d9;">Name:</div>
+                                    <div id="studentFullName" class="col-7 text-start fw-bold">-</div>
+                                </div>
+                                <div class="row mb-2 py-2 border-bottom" style="border-color: #f5f3ff;">
+                                    <div class="col-5 text-start fw-semibold" style="color: #6d28d9;">Section:</div>
+                                    <div id="studentCourse" class="col-7 text-start">-</div>
+                                </div>
+                                <div class="row mb-2 py-2 border-bottom" style="border-color: #f5f3ff;">
+                                    <div class="col-5 text-start fw-semibold" style="color: #6d28d9;">Time In:</div>
+                                    <div id="studentIn" class="col-7 text-start">-</div>
+                                </div>
+                                <div class="row mb-2 py-2 border-bottom" style="border-color: #f5f3ff;">
+                                    <div class="col-5 text-start fw-semibold" style="color: #6d28d9;">Time Out:</div>
+                                    <div id="studentOut" class="col-7 text-start">-</div>
+                                </div>
+                                <div class="row mb-2 py-2 border-bottom" style="border-color: #f5f3ff;">
+                                    <div class="col-5 text-start fw-semibold" style="color: #6d28d9;">Lunch In:</div>
+                                    <div id="lunchIn" class="col-7 text-start">-</div>
+                                </div>
+                                <div class="row mb-2 py-2 border-bottom" style="border-color: #f5f3ff;">
+                                    <div class="col-5 text-start fw-semibold" style="color: #6d28d9;">Lunch Out:</div>
+                                    <div id="lunchOut" class="col-7 text-start">-</div>
+                                </div>
+                                <div class="row py-2">
+                                    <div class="col-5 text-start fw-semibold" style="color: #6d28d9;">Status:</div>
+                                    <div id="studentStatus" class="col-7 text-start">-</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Right Column - Student Information -->
+                <!-- Right Column - Attendance Records Table -->
                 <div class="col-md-8">
-                    <!-- Name and Section -->
-                    <div class="BackgroundColor p-3 mb-3">
-                        <div class="row align-items-center">
-                            <div class="col-md-6 mb-2 mb-md-0">
-                                <label class="small text-muted mb-1">Name</label>
-                                <h4 id="studentFullName" class="mb-0">-</h4>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="small text-muted mb-1">Section</label>
-                                <h4 id="studentCourse" class="mb-0">-</h4>
+                    <div class="card shadow-sm">
+                        <div class="card-header text-center" style="background-color: #7c3aed; color: white;">
+                            <h5 class="mb-0">Attendance Records</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead style="background-color: #ede9fe;">
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Section</th>
+                                            <th>Time In</th>
+                                            <th>Lunch In</th>
+                                            <th>Lunch Out</th>
+                                            <th>Time Out</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="attendanceTable">
+                                        <!-- Attendance records will be populated here -->
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Time In/Out -->
-                    <div class="BackgroundColor p-3 mb-3">
-                        <div class="row align-items-center">
-                            <div class="col-md-6 mb-2 mb-md-0">
-                                <label class="small text-muted mb-1">Time In</label>
-                                <h4 id="studentIn" class="mb-0">-</h4>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="small text-muted mb-1">Time Out</label>
-                                <h4 id="studentOut" class="mb-0">-</h4>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Lunch In/Out -->
-                    <div class="BackgroundColor p-3 mb-3">
-                        <div class="row align-items-center">
-                            <div class="col-md-6 mb-2 mb-md-0">
-                                <label class="small text-muted mb-1">Lunch In</label>
-                                <h4 id="lunchIn" class="mb-0">-</h4>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="small text-muted mb-1">Lunch Out</label>
-                                <h4 id="lunchOut" class="mb-0">-</h4>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Remarks -->
-                    <div class="BackgroundColor p-3 mb-3">
-                        <label class="small text-muted mb-1">Remarks</label>
-                        <h4 id="studentStatus" class="mb-0">-</h4>
-                    </div>
-
-    
                 </div>
             </div>
         </div>
